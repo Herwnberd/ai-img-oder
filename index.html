@@ -10,250 +10,126 @@
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
-            height: 100%;
-            width: 100%;
+        body {
+            min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
-        }
-        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            height: 56px;
-            flex-shrink: 0;
-        }
-        .header h1 {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 24px;
-        }
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-        }
-        #coze-chat {
-            flex: 1;
-            width: 100%;
-            min-height: calc(100vh - 56px);
-            background: #f5f5f5;
-            position: relative;
-        }
-        .loading-tip {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #666;
-            z-index: 1;
-            max-width: 300px;
-        }
-        .loading-tip .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e9ecef;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .retry-btn {
-            margin-top: 15px;
-            padding: 8px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .token-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            padding: 20px;
         }
-        .token-box {
+        .container {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 90%;
-        }
-        .token-box h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        .token-box input {
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
             font-size: 14px;
-            margin-bottom: 15px;
-            outline: none;
         }
-        .token-box input:focus {
-            border-color: #667eea;
-        }
-        .token-box button {
+        .btn {
+            display: block;
             width: 100%;
-            padding: 12px;
+            padding: 16px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
         }
-        .token-box p {
-            font-size: 12px;
-            color: #888;
-            margin-top: 10px;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+        .features {
+            text-align: left;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .features h3 {
+            font-size: 14px;
+            color: #a0aec0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .features li {
+            padding: 8px 0;
+            color: #4a5568;
+            font-size: 14px;
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+        .features li::before {
+            content: "✓";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="header">
-            <h1>🎨 工单生图助手</h1>
-        </div>
-        <div id="coze-chat">
-            <div class="loading-tip" id="loadingTip">
-                <div class="spinner"></div>
-                <p id="loadingText">正在加载 Coze SDK...</p>
-            </div>
+    <div class="container">
+        <div class="icon">🎨</div>
+        <h1>工单生图助手</h1>
+        <p class="subtitle">智能解析Excel工单，批量生成产品图片</p>
+        
+        <a href="https://www.coze.cn/s/7637934088892661760" target="_blank" class="btn">
+            🚀 立即开始使用
+        </a>
+        
+        <button onclick="copyLink()" class="btn btn-secondary">
+            📋 复制链接分享
+        </button>
+        
+        <div class="features">
+            <h3>功能特点</h3>
+            <ul>
+                <li>自动解析Excel工单数据</li>
+                <li>批量裁剪产品图并上传</li>
+                <li>智能调用AI批量生图</li>
+                <li>自动打包ZIP并返回下载链接</li>
+                <li>支持多Excel轮流排期</li>
+            </ul>
         </div>
     </div>
     
     <script>
-        const SDK_URLS = [
-            'https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.1.0/libs/cn/index.js',
-            'https://unpkg.com/@coze/chat-app-sdk@1.1.0/dist/cn/index.js',
-        ];
-        let currentSdkIndex = 0;
-        
-        function loadSdk() {
-            return new Promise((resolve, reject) => {
-                if (typeof CozeWebSDK !== 'undefined') {
-                    resolve();
-                    return;
-                }
-                if (currentSdkIndex >= SDK_URLS.length) {
-                    reject(new Error('所有SDK地址都加载失败'));
-                    return;
-                }
-                const url = SDK_URLS[currentSdkIndex];
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => resolve();
-                script.onerror = () => {
-                    currentSdkIndex++;
-                    loadSdk().then(resolve).catch(reject);
-                };
-                document.head.appendChild(script);
+        function copyLink() {
+            const link = 'https://www.coze.cn/s/7637934088892661760';
+            navigator.clipboard.writeText(link).then(function() {
+                alert('✅ 链接已复制到剪贴板！');
             });
         }
-        
-        function updateLoadingText(text) {
-            const el = document.getElementById('loadingText');
-            if (el) el.textContent = text;
-        }
-        
-        function showError(message, showRetry = true) {
-            const loadingTip = document.getElementById('loadingTip');
-            if (loadingTip) {
-                loadingTip.innerHTML = `
-                    <div style="text-align: center;">
-                        <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
-                        <h3 style="margin-bottom: 10px; color: #c53030;">加载失败</h3>
-                        <p style="font-size: 14px; line-height: 1.6; color: #742a2a;">${message}</p>
-                        ${showRetry ? '<button class="retry-btn" onclick="location.reload()">点击重试</button>' : ''}
-                    </div>
-                `;
-            }
-        }
-        
-        function getToken() { return localStorage.getItem('coze_token'); }
-        function saveToken(token) { localStorage.setItem('coze_token', token); }
-        
-        function showTokenModal(callback) {
-            updateLoadingText('等待输入Token...');
-            const modal = document.createElement('div');
-            modal.className = 'token-modal';
-            modal.innerHTML = `
-                <div class="token-box">
-                    <h2>🔐 请输入您的 Coze Token</h2>
-                    <input type="password" id="tokenInput" placeholder="pat_xxxxxxxxxx" autocomplete="off">
-                    <button onclick="submitToken()">确认</button>
-                    <p>Token仅保存在您的本地浏览器中，不会上传到服务器</p>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            document.getElementById('tokenInput').focus();
-            document.getElementById('tokenInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') submitToken();
-            });
-            window.submitToken = function() {
-                const token = document.getElementById('tokenInput').value.trim();
-                if (token) {
-                    saveToken(token);
-                    document.body.removeChild(modal);
-                    callback(token);
-                }
-            };
-        }
-        
-        function initChat(token) {
-            updateLoadingText('正在初始化聊天...');
-            try {
-                document.getElementById('loadingTip').style.display = 'none';
-                new CozeWebSDK.WebChatClient({
-                    config: { bot_id: '7637934088892661760' },
-                    componentProps: { title: '工单生图助手' },
-                    auth: {
-                        type: 'token',
-                        token: token,
-                        onRefreshToken: () => getToken()
-                    }
-                });
-            } catch (error) {
-                showError('聊天初始化失败: ' + error.message + '<br><br>请检查Token是否正确');
-            }
-        }
-        
-        window.addEventListener('load', () => {
-            loadSdk()
-                .then(() => {
-                    const savedToken = getToken();
-                    if (savedToken) {
-                        initChat(savedToken);
-                    } else {
-                        showTokenModal((token) => initChat(token));
-                    }
-                })
-                .catch((error) => {
-                    showError('无法加载 Coze SDK<br><br>可能是网络问题，请刷新重试');
-                });
-        });
     </script>
 </body>
 </html>
