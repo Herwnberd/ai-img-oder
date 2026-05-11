@@ -86,21 +86,24 @@
         allowfullscreen
     ></iframe>
     
-    <script>
-        document.getElementById('chatFrame').onload = function() {
-            document.getElementById('loading').style.display = 'none';
-        };
-        
-        setTimeout(function() {
-            const loading = document.getElementById('loading');
-            if (loading.style.display !== 'none') {
-                loading.innerHTML = `
-                    <div class="spinner"></div>
-                    <h2>加载时间较长...</h2>
-                    <p>建议点击右上角「新窗口打开」直接在Coze官网使用</p>
-                `;
-            }
-        }, 10000);
-    </script>
+    
+<script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0-beta.19/libs/cn/index.js"></script>
+<script>
+  new CozeWebSDK.WebChatClient({
+    config: {
+      bot_id: '7637934088892661760',
+    },
+    componentProps: {
+      title: 'Coze',
+    },
+    auth: {
+      type: 'token',
+      token: 'pat_********',
+      onRefreshToken: function () {
+        return 'pat_********'
+      }
+    }
+  });
+</script>
 </body>
 </html>
