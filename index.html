@@ -5,131 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>工单生图助手</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            min-height: 100vh;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            gap: 10px;
         }
-        .container {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-        .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 28px;
-            color: #1a202c;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #718096;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header a {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
             text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-bottom: 20px;
+            padding: 4px 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        .main-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+        #chat-frame { flex: 1; width: 100%; border: none; background: white; }
+        .loading-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+            z-index: 1;
+            max-width: 350px;
         }
-        .btn-secondary {
-            background: #f7fafc;
-            color: #4a5568;
+        .loading-tip .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
-        .btn-secondary:hover {
-            background: #edf2f7;
-        }
-        .features {
-            text-align: left;
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid #e2e8f0;
-        }
-        .features h3 {
-            font-size: 14px;
-            color: #a0aec0;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .features li {
-            padding: 8px 0;
-            color: #4a5568;
-            font-size: 14px;
-            list-style: none;
-            display: flex;
-            align-items: center;
-        }
-        .features li::before {
-            content: "✓";
-            color: #48bb78;
-            font-weight: bold;
-            margin-right: 10px;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">🎨</div>
-        <h1>工单生图助手</h1>
-        <p class="subtitle">智能解析Excel工单，批量生成产品图片</p>
-        
-        <a href="https://www.coze.cn/s/7637934088892661760" target="_blank" class="btn">
-            🚀 立即开始使用
-        </a>
-        
-        <button onclick="copyLink()" class="btn btn-secondary">
-            📋 复制链接分享
-        </button>
-        
-        <div class="features">
-            <h3>功能特点</h3>
-            <ul>
-                <li>自动解析Excel工单数据</li>
-                <li>批量裁剪产品图并上传</li>
-                <li>智能调用AI批量生图</li>
-                <li>自动打包ZIP并返回下载链接</li>
-                <li>支持多Excel轮流排期</li>
-            </ul>
+    <div class="main-container">
+        <div class="header">
+            <h1>🎨 工单生图助手</h1>
+            <a href="https://www.coze.cn/space/7520435850309074959/bot/7637934088892661760" target="_blank">↗ 新窗口</a>
+        </div>
+        <div style="flex: 1; position: relative;">
+            <div class="loading-tip" id="loadingTip">
+                <div class="spinner"></div>
+                <h2>正在加载智能体...</h2>
+                <p>如果加载失败，请点击右上角「新窗口」按钮</p>
+            </div>
+            <iframe id="chat-frame" src="https://www.coze.cn/space/7520435850309074959/bot/7637934088892661760"></iframe>
         </div>
     </div>
     
     <script>
-        function copyLink() {
-            const link = 'https://www.coze.cn/s/7637934088892661760';
-            navigator.clipboard.writeText(link).then(function() {
-                alert('✅ 链接已复制到剪贴板！');
-            });
-        }
+        const iframe = document.getElementById('chat-frame');
+        const loadingTip = document.getElementById('loadingTip');
+        iframe.onload = function() {
+            loadingTip.style.display = 'none';
+        };
     </script>
 </body>
 </html>
