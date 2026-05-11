@@ -8,9 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             height: 100%;
-            width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
+            background: #f5f5f5;
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,67 +17,284 @@
             padding: 16px 20px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            height: 56px;
+            position: relative;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .token-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .chat-container {
+            height: calc(100vh - 56px - 80px);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            max-width: 80%;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .message.bot {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .message.loading {
+            background: white;
+            color: #999;
+            font-style: italic;
+        }
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-area input:focus { border-color: #667eea; }
+        .input-area button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .welcome {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .welcome .icon { font-size: 64px; margin-bottom: 16px; }
+        .welcome h2 { font-size: 20px; color: #333; margin-bottom: 8px; }
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            z-index: 9999;
         }
-        .header h1 { font-size: 18px; font-weight: 600; }
-        .header a {
-            color: rgba(255,255,255,0.8);
-            font-size: 12px;
-            text-decoration: none;
-            padding: 4px 10px;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
         }
-        .main-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
-        #chat-frame { flex: 1; width: 100%; border: none; background: white; }
-        .loading-tip {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #666;
-            z-index: 1;
-            max-width: 350px;
+        .modal-content h2 { font-size: 18px; margin-bottom: 20px; color: #333; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            outline: none;
         }
-        .loading-tip .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e9ecef;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-content p { font-size: 12px; color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="header">
-            <h1>🎨 工单生图助手</h1>
-            <a href="https://www.coze.cn/space/7520435850309074959/bot/7637934088892661760" target="_blank">↗ 新窗口</a>
+    <div class="header">
+        <h1>🎨 工单生图助手</h1>
+        <button class="token-btn" onclick="showTokenModal()">⚙️ 设置Token</button>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="welcome" id="welcome">
+            <div class="icon">🤖</div>
+            <h2>欢迎使用工单生图助手</h2>
+            <p>我可以帮你解析Excel工单，批量生成产品图片</p>
         </div>
-        <div style="flex: 1; position: relative;">
-            <div class="loading-tip" id="loadingTip">
-                <div class="spinner"></div>
-                <h2>正在加载智能体...</h2>
-                <p>如果加载失败，请点击右上角「新窗口」按钮</p>
-            </div>
-            <iframe id="chat-frame" src="https://www.coze.cn/space/7520435850309074959/bot/7637934088892661760"></iframe>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()" id="sendBtn">发送</button>
+    </div>
+    
+    <div class="modal" id="tokenModal" style="display: none;">
+        <div class="modal-content">
+            <h2>🔐 设置 Coze Token</h2>
+            <input type="password" id="tokenInput" placeholder="pat_xxxxxxxxxx">
+            <button onclick="saveToken()">保存并开始使用</button>
+            <p>Token仅保存在您的本地浏览器中</p>
+            <p>💡 获取方式：Coze官网 → 开发者 → API密钥</p>
         </div>
     </div>
     
     <script>
-        const iframe = document.getElementById('chat-frame');
-        const loadingTip = document.getElementById('loadingTip');
-        iframe.onload = function() {
-            loadingTip.style.display = 'none';
-        };
+        const BOT_ID = '7637934088892661760';
+        const API_BASE = 'https://api.coze.cn';
+        let conversationId = null;
+        let isLoading = false;
+        
+        function getToken() { return localStorage.getItem('coze_token'); }
+        function saveToken() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (token) {
+                localStorage.setItem('coze_token', token);
+                document.getElementById('tokenModal').style.display = 'none';
+                addMessage('bot', '✅ Token已保存！请发送你的Excel工单给我吧。');
+            }
+        }
+        function showTokenModal() {
+            document.getElementById('tokenInput').value = getToken() || '';
+            document.getElementById('tokenModal').style.display = 'flex';
+            document.getElementById('tokenInput').focus();
+        }
+        function hasToken() {
+            const t = getToken();
+            return t && t.startsWith('pat_');
+        }
+        
+        function addMessage(role, content) {
+            const container = document.getElementById('chatContainer');
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.style.display = 'none';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+            msgDiv.textContent = content;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addLoadingMessage() {
+            const container = document.getElementById('chatContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot loading';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.textContent = '正在思考中...';
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function removeLoadingMessage() {
+            const el = document.getElementById('loadingMessage');
+            if (el) el.remove();
+        }
+        
+        async function callCozeAPI(message) {
+            const token = getToken();
+            const response = await fetch(`${API_BASE}/v3/chat`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    bot_id: BOT_ID,
+                    user_id: 'hat_cloud_user',
+                    stream: false,
+                    auto_save_history: true,
+                    additional_messages: [{
+                        role: 'user',
+                        content: message,
+                        content_type: 'text'
+                    }],
+                    ...(conversationId ? { conversation_id: conversationId } : {})
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            conversationId = data.conversation_id;
+            
+            if (data.messages && Array.isArray(data.messages)) {
+                const botMessage = data.messages.find(m => m.role === 'assistant');
+                if (botMessage) return botMessage.content;
+            }
+            return '收到你的消息了！';
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            if (!hasToken()) { showTokenModal(); return; }
+            if (isLoading) return;
+            
+            isLoading = true;
+            document.getElementById('sendBtn').disabled = true;
+            
+            addMessage('user', message);
+            input.value = '';
+            addLoadingMessage();
+            
+            try {
+                const reply = await callCozeAPI(message);
+                removeLoadingMessage();
+                addMessage('bot', reply);
+            } catch (error) {
+                removeLoadingMessage();
+                addMessage('bot', `❌ 调用失败: ${error.message}\n请检查Token是否正确`);
+            } finally {
+                isLoading = false;
+                document.getElementById('sendBtn').disabled = false;
+                input.focus();
+            }
+        }
+        
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+        
+        window.addEventListener('load', function() {
+            if (!hasToken()) {
+                setTimeout(showTokenModal, 500);
+            } else {
+                addMessage('bot', '欢迎回来！请发送你的Excel工单给我。');
+            }
+        });
     </script>
 </body>
 </html>
