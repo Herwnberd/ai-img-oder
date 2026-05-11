@@ -16,7 +16,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
         }
-        /* 顶部标题栏 */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -31,14 +30,12 @@
             font-weight: 600;
             line-height: 24px;
         }
-        /* 主容器 */
         .main-container {
             display: flex;
             flex-direction: column;
             height: 100vh;
             width: 100vw;
         }
-        /* 聊天容器 - 固定高度，确保SDK能渲染 */
         #coze-chat {
             flex: 1;
             width: 100%;
@@ -46,7 +43,6 @@
             background: #f5f5f5;
             position: relative;
         }
-        /* 加载提示 */
         .loading-tip {
             position: absolute;
             top: 50%;
@@ -55,6 +51,7 @@
             text-align: center;
             color: #666;
             z-index: 1;
+            max-width: 300px;
         }
         .loading-tip .spinner {
             width: 40px;
@@ -69,7 +66,16 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Token输入弹窗 */
+        .retry-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
         .token-modal {
             position: fixed;
             top: 0;
@@ -117,10 +123,6 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .token-box button:hover {
-            transform: translateY(-2px);
         }
         .token-box p {
             font-size: 12px;
@@ -137,32 +139,64 @@
         <div id="coze-chat">
             <div class="loading-tip" id="loadingTip">
                 <div class="spinner"></div>
-                <p>正在加载聊天组件...</p>
+                <p id="loadingText">正在加载 Coze SDK...</p>
             </div>
         </div>
     </div>
-
-    <!-- 引入 Coze Web SDK - 使用稳定版本 -->
-    <script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.1.0/libs/cn/index.js"></script>
     
     <script>
-        console.log('=== 工单生图助手 开始初始化 ===');
+        const SDK_URLS = [
+            'https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.1.0/libs/cn/index.js',
+            'https://unpkg.com/@coze/chat-app-sdk@1.1.0/dist/cn/index.js',
+        ];
+        let currentSdkIndex = 0;
         
-        // 从 localStorage 读取Token
-        function getToken() {
-            const token = localStorage.getItem('coze_token');
-            console.log('读取Token:', token ? '已存在' : '不存在');
-            return token;
+        function loadSdk() {
+            return new Promise((resolve, reject) => {
+                if (typeof CozeWebSDK !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                if (currentSdkIndex >= SDK_URLS.length) {
+                    reject(new Error('所有SDK地址都加载失败'));
+                    return;
+                }
+                const url = SDK_URLS[currentSdkIndex];
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => {
+                    currentSdkIndex++;
+                    loadSdk().then(resolve).catch(reject);
+                };
+                document.head.appendChild(script);
+            });
         }
         
-        function saveToken(token) {
-            localStorage.setItem('coze_token', token);
-            console.log('Token已保存');
+        function updateLoadingText(text) {
+            const el = document.getElementById('loadingText');
+            if (el) el.textContent = text;
         }
         
-        // 显示Token输入弹窗
+        function showError(message, showRetry = true) {
+            const loadingTip = document.getElementById('loadingTip');
+            if (loadingTip) {
+                loadingTip.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                        <h3 style="margin-bottom: 10px; color: #c53030;">加载失败</h3>
+                        <p style="font-size: 14px; line-height: 1.6; color: #742a2a;">${message}</p>
+                        ${showRetry ? '<button class="retry-btn" onclick="location.reload()">点击重试</button>' : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        function getToken() { return localStorage.getItem('coze_token'); }
+        function saveToken(token) { localStorage.setItem('coze_token', token); }
+        
         function showTokenModal(callback) {
-            console.log('显示Token输入弹窗');
+            updateLoadingText('等待输入Token...');
             const modal = document.createElement('div');
             modal.className = 'token-modal';
             modal.innerHTML = `
@@ -174,14 +208,10 @@
                 </div>
             `;
             document.body.appendChild(modal);
-            
             document.getElementById('tokenInput').focus();
-            
-            // 回车提交
-            document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+            document.getElementById('tokenInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') submitToken();
             });
-            
             window.submitToken = function() {
                 const token = document.getElementById('tokenInput').value.trim();
                 if (token) {
@@ -192,56 +222,37 @@
             };
         }
         
-        // 初始化聊天
         function initChat(token) {
-            console.log('开始初始化聊天组件...');
-            
+            updateLoadingText('正在初始化聊天...');
             try {
-                // 隐藏加载提示
-                const loadingTip = document.getElementById('loadingTip');
-                if (loadingTip) {
-                    loadingTip.style.display = 'none';
-                }
-                
-                // 创建聊天客户端
+                document.getElementById('loadingTip').style.display = 'none';
                 new CozeWebSDK.WebChatClient({
-                    config: {
-                        bot_id: '7637934088892661760',
-                    },
-                    componentProps: {
-                        title: '工单生图助手',
-                    },
+                    config: { bot_id: '7637934088892661760' },
+                    componentProps: { title: '工单生图助手' },
                     auth: {
                         type: 'token',
                         token: token,
-                        onRefreshToken: function () {
-                            return getToken();
-                        }
+                        onRefreshToken: () => getToken()
                     }
                 });
-                
-                console.log('✅ 聊天组件初始化成功');
-                
             } catch (error) {
-                console.error('❌ 初始化失败:', error);
-                alert('初始化失败: ' + error.message);
+                showError('聊天初始化失败: ' + error.message + '<br><br>请检查Token是否正确');
             }
         }
         
-        // 等待页面完全加载后再初始化
-        window.addEventListener('load', function() {
-            console.log('页面加载完成');
-            
-            setTimeout(function() {
-                const savedToken = getToken();
-                if (savedToken) {
-                    initChat(savedToken);
-                } else {
-                    showTokenModal(function(token) {
-                        initChat(token);
-                    });
-                }
-            }, 500);
+        window.addEventListener('load', () => {
+            loadSdk()
+                .then(() => {
+                    const savedToken = getToken();
+                    if (savedToken) {
+                        initChat(savedToken);
+                    } else {
+                        showTokenModal((token) => initChat(token));
+                    }
+                })
+                .catch((error) => {
+                    showError('无法加载 Coze SDK<br><br>可能是网络问题，请刷新重试');
+                });
         });
     </script>
 </body>
