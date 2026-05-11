@@ -1,29 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="./main.css" />
-  </head>
-  <body>  
-    <!-- Install SDK -->
-
-<script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0-beta.19/libs/cn/index.js"></script>
-<script>
-  new CozeWebSDK.WebChatClient({
-    config: {
-      bot_id: '7637934088892661760',
-    },
-    componentProps: {
-      title: 'Coze',
-    },
-    auth: {
-      type: 'token',
-      token: 'pat_********',
-      onRefreshToken: function () {
-        return 'pat_********'
-      }
-    }
-  });
-</script>
-  </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工单生图助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header .open-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 56px);
+            border: none;
+            background: white;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+            z-index: 1;
+        }
+        .loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 工单生图助手</h1>
+        <a href="https://www.coze.cn/player/7637934088892661760" target="_blank" class="open-btn">↗ 新窗口打开</a>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <h2>正在加载智能体...</h2>
+        <p>首次打开需要登录Coze账号</p>
+    </div>
+    
+    <iframe 
+        class="iframe-container"
+        id="chatFrame"
+        src="https://www.coze.cn/player/7637934088892661760"
+        frameborder="0"
+        allowfullscreen
+    ></iframe>
+    
+    <script>
+        document.getElementById('chatFrame').onload = function() {
+            document.getElementById('loading').style.display = 'none';
+        };
+        
+        setTimeout(function() {
+            const loading = document.getElementById('loading');
+            if (loading.style.display !== 'none') {
+                loading.innerHTML = `
+                    <div class="spinner"></div>
+                    <h2>加载时间较长...</h2>
+                    <p>建议点击右上角「新窗口打开」直接在Coze官网使用</p>
+                `;
+            }
+        }, 10000);
+    </script>
+</body>
 </html>
