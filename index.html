@@ -1,24 +1,175 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工单生图助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        /* 顶部标题栏 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        /* 聊天容器 */
+        #coze-chat {
+            height: calc(100vh - 56px);
+            width: 100%;
+        }
+        /* Token输入弹窗（首次访问时显示） */
+        .token-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .token-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+        .token-box h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .token-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .token-box input:focus {
+            border-color: #667eea;
+        }
+        .token-box button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .token-box button:hover {
+            transform: translateY(-2px);
+        }
+        .token-box p {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
 <body>
+    <div class="header">
+        <h1>🎨 工单生图助手</h1>
+    </div>
+    <div id="coze-chat"></div>
 
-<script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0-beta.19/libs/cn/index.js"></script>
-<script>
-  new CozeWebSDK.WebChatClient({
-    config: {
-      bot_id: '7637934088892661760',
-    },
-    componentProps: {
-      title: 'Coze',
-    },
-    auth: {
-      type: 'token',
-      token: 'pat_********',
-      onRefreshToken: function () {
-        return 'pat_********'
-      }
-    }
-  });
-</script>
-
+    <!-- 引入 Coze Web SDK -->
+    <script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0/libs/cn/index.js"></script>
+    
+    <script>
+        // 从 localStorage 读取Token，没有则弹窗让用户输入
+        function getToken() {
+            return localStorage.getItem('coze_token');
+        }
+        
+        function saveToken(token) {
+            localStorage.setItem('coze_token', token);
+        }
+        
+        function showTokenModal(callback) {
+            const modal = document.createElement('div');
+            modal.className = 'token-modal';
+            modal.innerHTML = `
+                <div class="token-box">
+                    <h2>🔐 请输入您的 Coze Token</h2>
+                    <input type="password" id="tokenInput" placeholder="pat_xxxxxxxxxx" autocomplete="off">
+                    <button onclick="submitToken()">确认</button>
+                    <p>Token仅保存在您的本地浏览器中，不会上传到服务器</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            document.getElementById('tokenInput').focus();
+            
+            // 回车提交
+            document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') submitToken();
+            });
+            
+            window.submitToken = function() {
+                const token = document.getElementById('tokenInput').value.trim();
+                if (token) {
+                    saveToken(token);
+                    document.body.removeChild(modal);
+                    callback(token);
+                }
+            };
+        }
+        
+        // 初始化聊天
+        function initChat(token) {
+            new CozeWebSDK.WebChatClient({
+                config: {
+                    bot_id: '7637934088892661760',
+                },
+                componentProps: {
+                    title: '工单生图助手',
+                },
+                auth: {
+                    type: 'token',
+                    token: token,
+                    onRefreshToken: function () {
+                        return getToken();
+                    }
+                }
+            });
+        }
+        
+        // 启动逻辑
+        const savedToken = getToken();
+        if (savedToken) {
+            // 有保存的Token，直接初始化
+            initChat(savedToken);
+        } else {
+            // 没有保存的Token，弹窗让用户输入
+            showTokenModal(function(token) {
+                initChat(token);
+            });
+        }
+    </script>
 </body>
 </html>
