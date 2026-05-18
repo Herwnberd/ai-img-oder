@@ -96,12 +96,6 @@
             background-color: #f0f2ff;
         }
 
-        .image-upload-area i {
-            font-size: 3rem;
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-
         .image-upload-area p {
             color: #666;
             font-size: 1rem;
@@ -418,7 +412,19 @@
                             body: formData
                         });
                         
-                        const data = await response.json();
+                        console.log(`上传响应状态: ${response.status}`);
+                        
+                        let data;
+                        try {
+                            const responseText = await response.text();
+                            console.log(`原始响应:`, responseText);
+                            data = JSON.parse(responseText);
+                        } catch (parseError) {
+                            console.error(`JSON解析失败:`, parseError);
+                            showError(`服务器响应格式错误，请检查后端配置`);
+                            return;
+                        }
+                        
                         console.log(`上传结果:`, data);
                         
                         if (data.success) {
@@ -518,10 +524,21 @@
                     body: JSON.stringify(requestData),
                     signal: controller.signal
                 }).then(async (response) => {
+                    console.log(`生成响应状态: ${response.status}`);
                     if (!response.ok) {
                         throw new Error(`HTTP错误: ${response.status}`);
                     }
-                    return response.json();
+                    
+                    let data;
+                    try {
+                        const responseText = await response.text();
+                        console.log(`原始响应:`, responseText);
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error(`JSON解析失败:`, parseError);
+                        throw new Error(`服务器响应格式错误`);
+                    }
+                    return data;
                 });
 
                 const data = await Promise.race([fetchPromise, timeoutPromise]);
