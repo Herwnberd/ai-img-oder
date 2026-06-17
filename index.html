@@ -1,334 +1,56 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI生图工具</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #333; }
-        .form-group textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 1rem;
-            resize: vertical;
-            min-height: 120px;
-            font-family: inherit;
-        }
-        .image-upload-area {
-            border: 2px dashed #e0e0e0;
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .image-upload-area:hover { border-color: #667eea; background-color: #f8f9ff; }
-        .uploaded-images { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
-        .uploaded-image {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .uploaded-image img { width: 100%; height: 100%; object-fit: cover; }
-        .uploaded-image .remove-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            background: rgba(0,0,0,0.7);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .result-section { margin-top: 30px; display: none; }
-        .result-section.show { display: block; }
-        .result-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        }
-        .result-image { max-width: 100%; border-radius: 12px; }
-        .error-message {
-            background: #fff5f5;
-            border-left: 4px solid #ff4d4f;
-            padding: 12px 16px;
-            border-radius: 0 8px 8px 0;
-            color: #d93026;
-            margin-top: 15px;
-            display: none;
-        }
-        .error-message.show { display: block; }
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-        .progress-bar-inner {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            animation: progress 180s linear infinite;
-        }
-        @keyframes progress {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-        .timer {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>批量生图系统</title>
+<style>
+html, body { height: 100%; margin: 0; overflow: hidden; }
+#app { width: 100%; height: 100vh; position: relative; }
+#app iframe { width: 100% !important; height: 100% !important; border: none !important; position: absolute !important; top: 0 !important; left: 0 !important; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎨 AI生图工具</h1>
-            <p>输入提示词，生成精美图片（最长约4分钟）</p>
-        </div>
+<div id="app"></div>
+<script>
+var webSdkScript = document.createElement('script');
+webSdkScript.src = 'https://lf-cdn.coze.cn/obj/unpkg/flow-platform/builder-web-sdk/0.1.1-beta.1/dist/umd/index.js';
+document.head.appendChild(webSdkScript);
 
-        <div class="card">
-            <div class="form-group">
-                <label for="prompt">提示词 <span style="color: #ff4d4f;">*</span></label>
-                <textarea id="prompt" placeholder="请输入生图提示词，例如：一只可爱的猫咪在草地上玩耍，高清，可爱风格"></textarea>
-            </div>
+webSdkScript.onload = function () {
+  new CozeWebSDK.AppWebSDK({
+    token: 'pat_Jf0V2d0Zo92jNQ5LrRcJOZR7H62y2qXzFgYJP3Efw3gkpiPAnD3VbtZHPyWI1lTi',
+    appId: '7652252774620479497',
+    container: '#app',
+    userInfo: {
+      id: 'user',
+      url: 'https://lf-coze-web-cdn.coze.cn/obj/eden-cn/lm-lgvj/ljhwZthlaukjlkulzlp/coze/coze-logo.png',
+      nickname: 'User',
+    },
+    ui: { className: '' }
+  });
 
-            <div class="form-group">
-                <label>参考图片（可选）</label>
-                <div class="image-upload-area" id="uploadArea">
-                    <div style="font-size: 3rem; margin-bottom: 15px;">🖼️</div>
-                    <p>点击或拖拽上传图片</p>
-                    <p style="font-size: 14px; color: #999; margin-top: 5px;">支持 JPG、PNG、WebP 格式，最多上传5张</p>
-                </div>
-                <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
-                <div class="uploaded-images" id="uploadedImages"></div>
-            </div>
+  fixIframeFullscreen();
+};
 
-            <button class="btn btn-primary" id="generateBtn">
-                <span>🚀 生成图片</span>
-            </button>
-            
-            <div class="progress-bar" id="progressBar" style="display: none;">
-                <div class="progress-bar-inner"></div>
-            </div>
-            <div class="timer" id="timer" style="display: none;">生成中... 0秒</div>
+function fixIframeFullscreen() {
+  const app = document.getElementById('app');
+  if (!app) return;
+  const observer = new MutationObserver(() => {
+    const iframe = app.querySelector('iframe');
+    if (iframe) {
+      iframe.style.setProperty('width', '100%', 'important');
+      iframe.style.setProperty('height', '100%', 'important');
+      iframe.style.setProperty('position', 'absolute', 'important');
+      iframe.style.setProperty('top', '0', 'important');
+      iframe.style.setProperty('left', '0', 'important');
+      iframe.style.setProperty('border', 'none', 'important');
+    }
+  });
+  observer.observe(app, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+}
 
-            <div class="error-message" id="errorMessage"></div>
-        </div>
-
-        <div class="result-section" id="resultSection">
-            <div class="result-card">
-                <h3>✨ 生成结果</h3>
-                <img id="resultImage" class="result-image" alt="生成的图片">
-                <div style="margin-top: 20px; display: flex; gap: 15px;">
-                    <a id="downloadBtn" href="#" download style="flex: 1; text-align: center; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333;">⬇️ 下载图片</a>
-                    <a href="#" onclick="copyUrl(event)" style="flex: 1; text-align: center; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333;">📋 复制链接</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API_BASE = 'https://sd85bjva3fghtjddkv31g.apigateway-cn-guangzhou.volceapi.com';
-        const REQUEST_TIMEOUT = 300000; // 5分钟超时
-        const uploadedImages = [];
-        let timerInterval = null;
-        let startTime = null;
-        
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorMessage').classList.add('show');
-        }
-        
-        function hideError() {
-            document.getElementById('errorMessage').classList.remove('show');
-        }
-        
-        function startTimer() {
-            startTime = Date.now();
-            document.getElementById('timer').style.display = 'block';
-            document.getElementById('progressBar').style.display = 'block';
-            timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                document.getElementById('timer').textContent = `生成中... ${elapsed}秒`;
-            }, 1000);
-        }
-        
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            document.getElementById('timer').style.display = 'none';
-            document.getElementById('progressBar').style.display = 'none';
-        }
-        
-        document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('imageInput').click());
-        
-        document.getElementById('imageInput').addEventListener('change', async (e) => {
-            for (const file of e.target.files) {
-                if (uploadedImages.length >= 5) {
-                    showError('最多只能上传5张图片');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    hideError();
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    
-                    try {
-                        const response = await fetch(API_BASE + '/api/upload', {
-                            method: 'POST',
-                            body: formData,
-                            timeout: REQUEST_TIMEOUT
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('上传失败: ' + response.status);
-                        }
-                        
-                        const data = await response.json();
-                        if (data.success) {
-                            uploadedImages.push({ preview: e.target.result, url: data.url });
-                            renderImages();
-                        } else {
-                            showError(data.error || '上传失败');
-                        }
-                    } catch (error) {
-                        showError('上传失败: ' + (error.message || '网络错误'));
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        function renderImages() {
-            const container = document.getElementById('uploadedImages');
-            container.innerHTML = uploadedImages.map((img, i) => `
-                <div class="uploaded-image">
-                    <img src="${img.preview}">
-                    <button class="remove-btn" onclick="uploadedImages.splice(${i},1);renderImages()">×</button>
-                </div>
-            `).join('');
-        }
-
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) {
-                showError('请输入提示词');
-                return;
-            }
-            
-            hideError();
-            const btn = document.getElementById('generateBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span>生成中...';
-            startTimer();
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => {
-                    controller.abort();
-                }, REQUEST_TIMEOUT);
-                
-                const response = await fetch(API_BASE + '/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, images: uploadedImages.map(i => i.url) }),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    if (response.status === 504) {
-                        throw new Error('请求超时，请稍后重试（生图可能需要较长时间）');
-                    }
-                    throw new Error('服务器错误: ' + response.status);
-                }
-                
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('resultImage').src = data.url;
-                    document.getElementById('downloadBtn').href = data.url;
-                    document.getElementById('resultSection').classList.add('show');
-                } else {
-                    showError(data.error || '生成失败');
-                }
-                
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    showError('请求超时！生图可能需要较长时间，请耐心等待或稍后重试');
-                } else {
-                    showError('生成失败: ' + (error.message || '未知错误'));
-                }
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span>🚀 生成图片</span>';
-                stopTimer();
-            }
-        });
-
-        function copyUrl(e) {
-            e.preventDefault();
-            navigator.clipboard.writeText(document.getElementById('resultImage').src)
-                .then(() => alert('链接已复制到剪贴板'))
-                .catch(() => alert('复制失败'));
-        }
-    </script>
+document.addEventListener('DOMContentLoaded', fixIframeFullscreen);
+</script>
 </body>
 </html>
